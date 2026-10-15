@@ -1,127 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PalmaBlock — Trazabilidad Agrícola</title>
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="logo">🌴</span>
-      <div>
-        <strong>PalmaBlock</strong>
-        <small>Tiquete digital inmutable · Stellar Testnet</small>
-      </div>
-    </div>
-    <nav class="nav">
-      <button data-view="dashboard" class="active">Panel</button>
-      <button data-view="bascula">Báscula</button>
-      <button data-view="laboratorio">Laboratorio</button>
-      <button data-view="consulta">Consulta</button>
-      <button data-view="liquidacion">Liquidación</button>
-      <button data-view="auditoria">Auditoría</button>
-    </nav>
-  </header>
-
-  <main class="container">
-    <!-- PANEL -->
-    <section id="view-dashboard" class="view active">
-      <h2>Entregas registradas</h2>
-      <p class="muted">Flujo MVP: Báscula (paso 1-2) → Laboratorio (paso 3-4) → Consulta y conformidad (paso 5) → Liquidación (paso 6) → Auditoría (paso 8).</p>
-      <div class="cards" id="stats"></div>
-      <table class="table" id="tabla-entregas">
-        <thead>
-          <tr><th>ID</th><th>Proveedor</th><th>Placa</th><th>Neto (kg)</th><th>Calidad</th><th>Pago est.</th><th>Estado</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- MITAD A: BÁSCULA (LuisDavid999) -->
-    <section id="view-bascula" class="view">
-      <h2>Registro de báscula <span class="badge">Mitad A · Planta</span></h2>
-      <p class="muted">Operario de patio: registra peso bruto y tara. El sistema calcula el neto y genera el sello Stellar (hash + timestamp). Equivale a pasos 1-2 del Blueprint.</p>
-      <form id="form-bascula" class="card form">
-        <label>Proveedor
-          <input name="proveedor" required placeholder="Ej. Luis David — Finca El Palmar" />
-        </label>
-        <label>Placa del vehículo
-          <input name="placa" required placeholder="Ej. XKL-123" />
-        </label>
-        <div class="row">
-          <label>Peso bruto (kg)
-            <input name="bruto" type="number" min="1" step="0.01" required />
-          </label>
-          <label>Tara (kg)
-            <input name="tara" type="number" min="0" step="0.01" required />
-          </label>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PalmaBlock — Trazabilidad Agrícola</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div>
+          <strong>PalmaBlock</strong>
+          <small>Tiquete digital inmutable · Stellar Testnet</small>
         </div>
-        <button type="submit">Registrar y sellar peso</button>
-      </form>
-      <div id="resultado-bascula" class="card hidden"></div>
-    </section>
-
-    <!-- MITAD A: LABORATORIO (LuisDavid999) -->
-    <section id="view-laboratorio" class="view">
-      <h2>Carga de laboratorio <span class="badge">Mitad A · Planta</span></h2>
-      <p class="muted">Analista: una sola escritura por muestra. Las correcciones crean un registro nuevo visible, nunca editan el anterior. Pasos 3-4 del Blueprint.</p>
-      <form id="form-lab" class="card form">
-        <label>Entrega (solo pendientes de calidad)
-          <select name="entregaId" id="select-entregas" required></select>
-        </label>
-        <div class="row">
-          <label>Acidez (%)
-            <input name="acidez" type="number" min="0" step="0.01" required />
-          </label>
-          <label>Impurezas (%)
-            <input name="impurezas" type="number" min="0" step="0.01" required />
-          </label>
-        </div>
-        <label>Observaciones
-          <input name="obs" placeholder="Opcional" />
-        </label>
-        <button type="submit">Sellar calidad</button>
-      </form>
-      <div id="resultado-lab" class="card hidden"></div>
-    </section>
-
-    <!-- MITAD B: compañero -->
-    <section id="view-consulta" class="view">
-      <h2>Consulta del tiquete <span class="badge b">Mitad B · Productor</span></h2>
-      <p class="muted">Palmicultor: consulta su tiquete, ve pago estimado y firma conformidad. <em>Archivo responsable: <code>js/consulta.js</code> (compañero).</em></p>
-      <div class="card form">
-        <label>Buscar por ID de entrega
-          <input id="buscar-tiquete" placeholder="Ej. PB-2026-0001" />
-        </label>
-        <button id="btn-buscar">Buscar</button>
       </div>
-      <div id="resultado-consulta" class="card hidden"></div>
-    </section>
+      <nav class="nav">
+        <button data-view="dashboard" class="active">Panel</button>
+        <button data-view="bascula">Báscula</button>
+        <button data-view="laboratorio">Laboratorio</button>
+        <button data-view="consulta">Consulta</button>
+        <button data-view="liquidacion">Liquidación</button>
+        <button data-view="auditoria">Auditoría</button>
+      </nav>
+    </header>
 
-    <section id="view-liquidacion" class="view">
-      <h2>Liquidación mensual <span class="badge b">Mitad B · Admin</span></h2>
-      <p class="muted">Liquidación automática con reglas visibles. <em>Archivo responsable: <code>js/liquidacion.js</code> (compañero).</em></p>
-      <div id="resultado-liquidacion"></div>
-    </section>
+    <main class="container">
+      <!-- PANEL -->
+      <section id="view-dashboard" class="view active">
+        <h2>Entregas registradas</h2>
+        <p class="muted">
+          Flujo MVP: Báscula (paso 1-2) → Laboratorio (paso 3-4) → Consulta y
+          conformidad (paso 5) → Liquidación (paso 6) → Auditoría (paso 8).
+        </p>
+        <div class="cards" id="stats"></div>
+        <table class="table" id="tabla-entregas">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Proveedor</th>
+              <th>Placa</th>
+              <th>Neto (kg)</th>
+              <th>Calidad</th>
+              <th>Pago est.</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
 
-    <section id="view-auditoria" class="view">
-      <h2>Auditoría del gremio <span class="badge b">Mitad B · Auditor</span></h2>
-      <p class="muted">Verificación de hash y marca de tiempo. <em>El compañero completa <code>js/liquidacion.js</code> y esta vista.</em></p>
-      <div id="resultado-auditoria"></div>
-    </section>
-  </main>
+      <!-- MITAD A: BÁSCULA (LuisDavid999) -->
+      <section id="view-bascula" class="view">
+        <h2>Registro de báscula <span class="badge">Mitad A · Planta</span></h2>
+        <p class="muted">
+          Operario de patio: registra peso bruto y tara. El sistema calcula el
+          neto y genera el sello Stellar (hash + timestamp). Equivale a pasos
+          1-2 del Blueprint.
+        </p>
+        <form id="form-bascula" class="card form">
+          <label
+            >Proveedor
+            <input
+              name="proveedor"
+              required
+              placeholder="Ej. Luis David — Finca El Palmar"
+            />
+          </label>
+          <label
+            >Placa del vehículo
+            <input name="placa" required placeholder="Ej. XKL-123" />
+          </label>
+          <div class="row">
+            <label
+              >Peso bruto (kg)
+              <input name="bruto" type="number" min="1" step="0.01" required />
+            </label>
+            <label
+              >Tara (kg)
+              <input name="tara" type="number" min="0" step="0.01" required />
+            </label>
+          </div>
+          <button type="submit">Registrar y sellar peso</button>
+        </form>
+        <div id="resultado-bascula" class="card hidden"></div>
+      </section>
 
-  <footer class="footer">
-    <small>PalmaBlock MVP · Semana 3 Functional Proof · Solo testnet · Sin contrato desplegado esta semana</small>
-  </footer>
+      <!-- MITAD A: LABORATORIO (LuisDavid999) -->
+      <section id="view-laboratorio" class="view">
+        <h2>
+          Carga de laboratorio <span class="badge">Mitad A · Planta</span>
+        </h2>
+        <p class="muted">
+          Analista: una sola escritura por muestra. Las correcciones crean un
+          registro nuevo visible, nunca editan el anterior. Pasos 3-4 del
+          Blueprint.
+        </p>
+        <form id="form-lab" class="card form">
+          <label
+            >Entrega (solo pendientes de calidad)
+            <select name="entregaId" id="select-entregas" required></select>
+          </label>
+          <div class="row">
+            <label
+              >Acidez (%)
+              <input name="acidez" type="number" min="0" step="0.01" required />
+            </label>
+            <label
+              >Impurezas (%)
+              <input
+                name="impurezas"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+              />
+            </label>
+          </div>
+          <label
+            >Observaciones
+            <input name="obs" placeholder="Opcional" />
+          </label>
+          <button type="submit">Sellar calidad</button>
+        </form>
+        <div id="resultado-lab" class="card hidden"></div>
+      </section>
 
-  <script src="js/store.js"></script>
-  <script src="js/bascula.js"></script>
-  <script src="js/laboratorio.js"></script>
-  <script src="js/consulta.js"></script>
-  <script src="js/liquidacion.js"></script>
-  <script src="js/app.js"></script>
-</body>
+      <!-- MITAD B: compañero -->
+      <section id="view-consulta" class="view">
+        <h2>
+          Consulta del tiquete <span class="badge b">Mitad B · Productor</span>
+        </h2>
+        <p class="muted">
+          Palmicultor: consulta su tiquete, ve pago estimado y firma
+          conformidad.
+          <em>Archivo responsable: <code>js/consulta.js</code> (compañero).</em>
+        </p>
+        <div class="card form">
+          <label
+            >Buscar por ID de entrega
+            <input id="buscar-tiquete" placeholder="Ej. PB-2026-0001" />
+          </label>
+          <button id="btn-buscar">Buscar</button>
+        </div>
+        <div id="resultado-consulta" class="card hidden"></div>
+      </section>
+
+      <section id="view-liquidacion" class="view">
+        <h2>
+          Liquidación mensual <span class="badge b">Mitad B · Admin</span>
+        </h2>
+        <p class="muted">
+          Liquidación automática con reglas visibles.
+          <em
+            >Archivo responsable:
+            <code>js/liquidacion.js</code> (compañero).</em
+          >
+        </p>
+        <div id="resultado-liquidacion"></div>
+      </section>
+
+      <section id="view-auditoria" class="view">
+        <h2>
+          Auditoría del gremio <span class="badge b">Mitad B · Auditor</span>
+        </h2>
+        <p class="muted">
+          Verificación de hash y marca de tiempo.
+          <em
+            >El compañero completa <code>js/liquidacion.js</code> y esta
+            vista.</em
+          >
+        </p>
+        <div id="resultado-auditoria"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small
+        >PalmaBlock MVP · Semana 3 Functional Proof · Solo testnet · Sin
+        contrato desplegado esta semana</small
+      >
+    </footer>
+
+    <script src="js/store.js"></script>
+    <script src="js/bascula.js"></script>
+    <script src="js/laboratorio.js"></script>
+    <script src="js/consulta.js"></script>
+    <script src="js/liquidacion.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>
