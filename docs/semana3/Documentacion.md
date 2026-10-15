@@ -1,0 +1,32 @@
+# Documentación Semana 3 — PalmaBlock Functional Proof
+
+## 1. Front construido
+
+El front implementa el flujo principal del MVP definido en el Product Blueprint (docs/semana2/ProductBlueprint.md), que va de patio a pago: registro en báscula, carga de laboratorio, consulta del tiquete con pago estimado, liquidación mensual y auditoría. Está construido en HTML + CSS + JavaScript vanilla, sin framework ni build, para que cualquier revisor pueda ejecutarlo con doble clic y para que funcione en celulares de gama baja, que es el dispositivo del palmicultor según el Blueprint.
+
+La aplicación vive en `/frontend` y es una SPA con seis vistas navegables desde la barra superior: Panel, Báscula, Laboratorio, Consulta, Liquidación y Auditoría. La persistencia es en `localStorage` bajo la clave `palmablock_entregas_v1`, que simula el espejo off-chain (Postgres en la arquitectura final), mientras el campo hash + timestamp simula el ancla on-chain que en semana 4 vivirá en Soroban/Stellar Testnet. Cada entrega guarda proveedor, placa, bruto, tara, neto calculado, hash de peso con hora, calidad con su propio hash y conformidad pendiente.
+
+La vista Báscula corresponde a los pasos 1 y 2 del flujo de usuario: el operario ingresa proveedor, placa, peso bruto y tara, el sistema valida que el neto sea mayor a cero, genera el ID correlativo PB-2026-XXXX y produce el sello con hora. La vista Laboratorio cubre los pasos 3 y 4: el analista elige una entrega pendiente, carga acidez e impurezas y el sistema aplica la regla de una sola escritura, rechazando ediciones y obligando a crear correcciones visibles, que es el criterio de aceptación de la historia 2. Al sellar calidad se calcula el pago estimado con regla visible de 850 COP por kilo menos 5 por ciento si acidez mayor a 4 y menos 3 por ciento si impurezas mayor a 3, lo que conecta directo con las historias 4 y 7.
+
+La vista Consulta cubre el paso 5: el productor busca por ID, ve pesos, calidad, hashes, hora y pago desglosado, que es el criterio de menos de tres toques de la historia 1. Liquidación agrega todas las entregas en un total mensual que cuadra uno a uno con los registros sellados, sin edición manual, como pide la historia 7. Auditoría lista cada hash con su marca de tiempo para que el gremio verifique disputas, como pide la historia 5. Los roles y permisos de la historia 6 quedan representados por la separación de pestañas por rol, con validación básica en front que el backend endurecerá en semana 4.
+
+Para probar: abrir Panel para ver el seed demo, registrar una entrega en Báscula, sellar su calidad en Laboratorio, buscarla en Consulta y comprobar el total en Liquidación y los hashes en Auditoría. Capturas: incluir aquí `frontend/assets/panel.png`, `bascula.png`, `laboratorio.png` y `consulta.png` o el enlace al deploy en Vercel colocado además en el campo Website de Apex.
+
+## 2. Decisión técnica
+
+Elegimos la opción A: contrato propio en Soroban.
+
+El contrato hará exactamente dos cosas que ya simula el front: registrar el hash de la entrega de báscula con marca de tiempo y operador, y registrar el hash del resultado de calidad ligado al ID de entrega con regla de una sola escritura donde una corrección solo puede agregarse como evento nuevo visible. También expondrá lectura pública para que el productor, la liquidación y el gremio verifiquen sin pasar por el backend de la planta. Necesitamos uno propio porque la lógica de negocio es específica de PalmaBlock: ID correlativo por entrega, vínculo peso-calidad, castigos visibles y firma de conformidad del productor, nada de lo cual existe como plantilla cerrada. Esta decisión se apoya en el uso de Stellar del Blueprint, que ya definió Soroban para sellos, Testnet para ledger compartido de bajo costo, Horizon y SDK para verificación sin nodo propio, y Freighter para la firma bilateral.
+
+Descartamos la opción B, usar solo una herramienta existente sin contrato, porque las alternativas del ecosistema no cubren el requisito central. Un activo emitido en Stellar serviría para pagos pero no para sellar calidad inmutable con reglas. Usar solo Horizon con memos notariados probaría existencia pero sin la regla de no edición ni eventos de corrección auditables, que es donde nace la disputa de liquidación. Usar una plataforma de trazabilidad de terceros nos dejaría con custodia centralizada y costo por tiquete mayor, contradiciendo el criterio de pertinencia de múltiples partes que no confían en un intermediario. Por eso usaremos las herramientas del ecosistema como complemento, Horizon, SDK y Freighter, pero la verdad compartida vivirá en nuestro contrato Soroban. Solo dejamos escrita la decisión esta semana, sin código ni despliegue, que corresponde a la semana 4 y siempre en testnet.
+
+## 3. Participación del equipo
+
+| Integrante | Usuario GitHub | Aporte / responsabilidad |
+|---|---|---|
+| Luis David Martínez Galindo | LuisDavid999 | Mitad A — Planta: estructura `frontend/`, layout y navegación (`index.html`, `css/styles.css`, `js/app.js`), capa de datos mock (`js/store.js`), registro de báscula (`js/bascula.js`) y carga de laboratorio (`js/laboratorio.js`). Sección Front construido de este documento. |
+| Compañero (completar nombre) | COMPLETAR_USUARIO | Mitad B — Productor/Admin: consulta del tiquete y conformidad (`js/consulta.js`), liquidación mensual y auditoría (`js/liquidacion.js`), capturas, deploy en Vercel y sección de bloqueos. Debe completar esta fila y commitear sus archivos en su rama propia. |
+
+## 4. Bloqueos y siguiente paso
+
+Quedó pendiente conectar el sellado real a Soroban y Stellar Testnet mediante backend que firme, porque esta semana el hash es simulado en front; integrar Freighter para la firma de conformidad del productor; agregar módulo de reclamación con prueba adjunta y gestión de roles dura en backend. El próximo paso hacia el MVP es escribir y probar el contrato propio en testnet con las funciones de sellar peso y sellar calidad definidas arriba, y reemplazar `mockHash()` por llamadas vía backend y Horizon sin romper el flujo ya visible.
