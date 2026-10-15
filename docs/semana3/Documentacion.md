@@ -22,10 +22,10 @@ Descartamos la opción B, usar solo una herramienta existente sin contrato, porq
 
 ## 3. Participación del equipo
 
-| Integrante | Usuario GitHub | Aporte / responsabilidad |
-|---|---|---|
-| Luis David Martínez Galindo | LuisDavid999 | Mitad A — Planta: estructura `frontend/`, layout y navegación (`index.html`, `css/styles.css`, `js/app.js`), capa de datos mock (`js/store.js`), registro de báscula (`js/bascula.js`) y carga de laboratorio (`js/laboratorio.js`). Sección Front construido de este documento. |
-| Compañero (completar nombre) | COMPLETAR_USUARIO | Mitad B — Productor/Admin: consulta del tiquete y conformidad (`js/consulta.js`), liquidación mensual y auditoría (`js/liquidacion.js`), capturas, deploy en Vercel y sección de bloqueos. Debe completar esta fila y commitear sus archivos en su rama propia. |
+| Integrante                  | Usuario GitHub | Aporte / responsabilidad                                                                                                                                                                                                                                               |
+| --------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Luis David Martínez Galindo | LuisDavid999   | Planta: estructura `frontend/`, layout y navegación (`index.html`, `css/styles.css`, `js/app.js`), capa de datos mock (`js/store.js`), registro de báscula (`js/bascula.js`) y carga de laboratorio (`js/laboratorio.js`). Sección Front construido de este documento. |
+| Gustavo Adolfo Gil Rivera   | gagr308-droid  | Productor/Admin: consulta del tiquete y conformidad (`js/consulta.js`), liquidación mensual y auditoría (`js/liquidacion.js`), capturas, deploy en Vercel y sección de bloqueos. Debe completar esta fila y commitear sus archivos en su rama propia.                  |
 
 ## 4. Bloqueos y siguiente paso
 
